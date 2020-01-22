@@ -3,7 +3,15 @@ const db = require('./userDb.js');
 const router = express.Router();
 
 router.post('/', (req, res) => {
+  const name = req.body;
   // do your magic!
+  db.insert(name)
+    .then(data => {
+      res.status(201).json(name);
+    })
+    .catch( err => {
+      res.status(500).json({errorMessage: 'there was an error posting new user to server!'});
+    })
   
 });
 
@@ -44,15 +52,15 @@ router.get('/:id', (req, res) => {
 
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId, (req, res) => {
   // do your magic!
-  db.getUserPosts(req.params.id)
+  db.getUserPosts(req.user)
   .then( userPosts => {
-    if(userPosts.length > 0 ){
+    // if(userPosts.length > 0 ){
       res.status(200).json(userPosts);
-    }else {
-      res.status(404).json({message: 'there is no user with specific ID'});
-    }
+    // }else {
+    //   res.status(404).json({message: 'there is no user with specific ID'});
+    // }
   })
   .catch( err => {
     res.status(500).json({errorMessage: 'something went wrong retrieve user post with the specific Id'});
@@ -71,6 +79,14 @@ router.put('/:id', (req, res) => {
 
 function validateUserId(req, res, next) {
   // do your magic!
+   req.user = req.params.id;
+   console.log('validateUserId:',req.user);
+   
+  if(req.user){
+    next();
+  }else {
+    res.status(404).json({ message: "invalid user id" })
+  }
 }
 
 function validateUser(req, res, next) {

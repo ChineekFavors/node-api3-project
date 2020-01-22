@@ -16,6 +16,7 @@ server.use('/', userRouter);
 //custom middleware
 
 function logger(req, res, next) {
+  
   const method = req.method;
   const url = req.url;
   const timestamp = new Date();
