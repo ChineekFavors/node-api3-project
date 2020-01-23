@@ -2,17 +2,8 @@ const express = require('express');
 const db = require('./userDb.js');
 const router = express.Router();
 
-router.post('/', (req, res) => {
-  const name = req.body;
-  // do your magic!
-  db.insert(name)
-    .then(data => {
-      res.status(201).json(name);
-    })
-    .catch( err => {
-      res.status(500).json({errorMessage: 'there was an error posting new user to server!'});
-    })
-  
+router.post('/', validateUser, (req, res) => {
+  res.status(200).json(req.name);
 });
 
 router.post('/:id/posts', (req, res) => {
@@ -32,23 +23,15 @@ router.get('/', (req, res) => {
   db.get()
     .then( data => {
       res.status(200).json({data});
-
     })
     .catch(err => {
       res.status(500).json({errorMessage: 'there was a problem retrieving data from the server!'});
     })
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
   // do your magic!
-  db.getById(req.params.id)
-    .then(userById => {
-      res.status(200).json(userById)
-    })
-    .catch(err => {
-      res.status(500).json({message: 'there was a problem retrieving data with specific user ID'})
-    })
-
+  res.status(200).json(req.user);
 
 });
 
@@ -56,41 +39,65 @@ router.get('/:id/posts', validateUserId, (req, res) => {
   // do your magic!
   db.getUserPosts(req.user)
   .then( userPosts => {
-    // if(userPosts.length > 0 ){
       res.status(200).json(userPosts);
-    // }else {
-    //   res.status(404).json({message: 'there is no user with specific ID'});
-    // }
   })
   .catch( err => {
     res.status(500).json({errorMessage: 'something went wrong retrieve user post with the specific Id'});
   })
 });
-
-router.delete('/:id', (req, res) => {
+//find out why it returns created not what you wrote
+router.delete('/:id',validateUserId, (req, res) => {
   // do your magic!
+  db.remove(req.params.id)
+    .then(data => {
+      res.status(201).json({messsge: `user with id ${req.params.id} has been deleted from database`})
+    })
+    .catch( err => {
+      res.status(500).json({errorMessage: "there was a problem deleting user from database"})
+    })
+  
 });
 
 router.put('/:id', (req, res) => {
   // do your magic!
+  db.update()
 });
 
 //custom middleware
 
 function validateUserId(req, res, next) {
   // do your magic!
-   req.user = req.params.id;
-   console.log('validateUserId:',req.user);
-   
-  if(req.user){
-    next();
-  }else {
-    res.status(404).json({ message: "invalid user id" })
-  }
+  db.getById(req.params.id)
+  .then(user => {
+    if(user){
+      req.user = user;
+      next()
+    } else {
+        res.status(400).json({message: "invalid user id"})
+    }
+  })
+  .catch(err => {
+    res.status(500).json({errorMessage: "there was a problem reteiving the info"})
+  })
+  
 }
 
 function validateUser(req, res, next) {
   // do your magic!
+   req.body;
+  db.insert(req.body)
+    .then(name =>{
+        if(name == ""){
+          res.status(400).json({message: "missing required name field" })
+        } else{
+          req.name = name;
+          next()
+        } 
+    })
+    .catch( err => {
+      res.status(500).json({errorMessage: "request must have a body with name prooerty"})
+    })
+   
 }
 
 function validatePost(req, res, next) {
