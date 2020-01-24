@@ -35,7 +35,7 @@ router.get('/:id', validateUserId, (req, res) => {
 
 });
 
-router.get('/:id/posts', validateUserId, (req, res) => {
+router.get('/:id/posts', validateUserId, /*validatePost*/  (req, res) => {
   // do your magic!
   db.getUserPosts(req.user)
   .then( userPosts => {
@@ -45,22 +45,23 @@ router.get('/:id/posts', validateUserId, (req, res) => {
     res.status(500).json({errorMessage: 'something went wrong retrieve user post with the specific Id'});
   })
 });
-//find out why it returns created not what you wrote
+
 router.delete('/:id',validateUserId, (req, res) => {
   // do your magic!
   db.remove(req.params.id)
-    .then(data => {
-      res.status(201).json({messsge: `user with id ${req.params.id} has been deleted from database`})
-    })
-    .catch( err => {
-      res.status(500).json({errorMessage: "there was a problem deleting user from database"})
-    })
-  
+  .then( userRemove => {
+    res.status(201).json({messsge: `user with id ${req.params.id} has been deleted from database`})
+
+  })
+    
+    
+   
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, validatePost, (req, res) => {
   // do your magic!
-  db.update()
+    res.status(400).json(req.post)
+     
 });
 
 //custom middleware
@@ -102,6 +103,24 @@ function validateUser(req, res, next) {
 
 function validatePost(req, res, next) {
   // do your magic!
+  const body = req.body;
+  console.log("validatePost:body", body)
+
+  if(!body){
+    res.status(400).json({message: "missing post data"})
+  } if(!body.name) {
+      res.status(400).json({message: "missing required text field"})
+  } if(body.name){
+    db.getUserPosts(req.params)
+      .then(post => {
+        req.post = body;
+        next()
+      })
+      .catch(err => {
+        res.status(500).json({errorMessage: "there was a problem posting to server"})
+      })
+
+  }
 }
 
 module.exports = router;

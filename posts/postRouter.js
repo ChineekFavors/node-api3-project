@@ -4,7 +4,12 @@ const db = require('./postDb.js');
 const router = express.Router();
 
 router.get('/', (req, res) => {
+  db.get()
+  .then( data => {
+    res.status(200).json(data)
+  })
   // do your magic!
+  
 });
 
 router.get('/:id', (req, res) => {
@@ -23,6 +28,7 @@ router.put('/:id', (req, res) => {
 
 function validatePostId(req, res, next) {
   // do your magic!
+
 }
 
 module.exports = router;
