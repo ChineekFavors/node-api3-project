@@ -6,31 +6,40 @@ const router = express.Router();
 
 //good
 router.post('/', validateUser, (req, res) => {
-  res.status(200).json(req.name);
+  res.status(201).json(req.name);
 });
+
 //good
 router.get('/', (req, res) => {
   // do your magic!
   db.get()
     .then( data => {
-      res.status(200).json({data});
+      res.status(201).json({data});
     })
     .catch(err => {
       res.status(500).json({errorMessage: 'there was a problem retrieving data from the server!'});
     })
 });
+
 //good
 router.get('/:id', validateUserId, (req, res) => {
   // do your magic!
-  res.status(200).json(req.user);
+  res.status(201).json(req.user);
 
 });
 
-router.get('/posts/:id', validateUserId, /*validatePost,*/ (req, res) => {
- 
-      res.status(200).json(req.post);
- 
-});
+// router.get('/:id', validateUserId, (req, res) => {
+//   db.getUserPosts(req.user)
+//     .then(data =>{
+//       res.status(201).json(data)
+//     })
+//     .catch( err => {
+//       res.status(500).json({errorMessage: "there was a problem retrieving user's post!"})
+//     })
+
+// });
+
+
 //good
 router.delete('/:id',validateUserId, (req, res) => {
   // do your magic!
@@ -43,10 +52,9 @@ router.delete('/:id',validateUserId, (req, res) => {
   .catch( err => {
     res.status(500).json({errorMessage: "there was a problem deleted user from data!"})
   })
-    
-    
-   
+      
 });
+
 //good
 router.put('/:id', validateUserId, validateUpDate, (req, res) => {
   // do your magic!
@@ -72,11 +80,12 @@ function validateUserId(req, res, next) {
   })
   
 }
+
 //good
 function validateUser(req, res, next) {
 // do your magic!
 const {name} = req.body;
-console.log("validateUser:name", name)
+
   if(name == undefined){
     res.status(400).json({message: "request must have a body with name property!" })
   }
@@ -99,11 +108,10 @@ function validatePost(req, res, next) {
   // do your magic!
   const  {text, user_id} = req.body;
   
-
-  if(!text && !user_id){
+  if(!req.body){
     res.status(400).json({message: "missing post data"})
 
-  } if(!id || !text || !user_id) {
+  } if(!text || !user_id) {
       res.status(400).json({message: "missing required text field"})
 
   } else if(text, user_id){
@@ -117,6 +125,7 @@ function validatePost(req, res, next) {
         })
   }
 }
+
 //good
 function validateUpDate( req, res, next) {
   const {id, name} = req.body;
@@ -144,3 +153,4 @@ function validateUpDate( req, res, next) {
 }
 
 module.exports = router;
+
