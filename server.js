@@ -8,8 +8,8 @@ server.use(helmet());
 server.use(express.json());
 server.use(logger);
 
-server.use('/', userRouter);
-server.use('/:id/post', postRouter);
+server.use('/users', userRouter);
+server.use('/posts', postRouter);
 
 
 

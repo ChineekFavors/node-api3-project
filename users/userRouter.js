@@ -2,22 +2,13 @@ const express = require('express');
 const db = require('./userDb.js');
 const router = express.Router();
 
+
+
+//good
 router.post('/', validateUser, (req, res) => {
   res.status(200).json(req.name);
 });
-
-router.post('/:id/posts', (req, res) => {
-  const id = req.params.id;
-  // do your magic!
-  db.insert()
-    .then( data => {
-      res.status(200).json(data);
-    })
-    .catch( err => {
-      res.status(500).json({errorMessage: 'there was a problem performing a post to the server!'});
-    })
-});
-
+//good
 router.get('/', (req, res) => {
   // do your magic!
   db.get()
@@ -28,44 +19,43 @@ router.get('/', (req, res) => {
       res.status(500).json({errorMessage: 'there was a problem retrieving data from the server!'});
     })
 });
-
+//good
 router.get('/:id', validateUserId, (req, res) => {
   // do your magic!
   res.status(200).json(req.user);
 
 });
 
-router.get('/:id/posts', validateUserId, /*validatePost*/  (req, res) => {
-  // do your magic!
-  db.getUserPosts(req.user)
-  .then( userPosts => {
-      res.status(200).json(userPosts);
-  })
-  .catch( err => {
-    res.status(500).json({errorMessage: 'something went wrong retrieve user post with the specific Id'});
-  })
+router.get('/posts/:id', validateUserId, /*validatePost,*/ (req, res) => {
+ 
+      res.status(200).json(req.post);
+ 
 });
-
+//good
 router.delete('/:id',validateUserId, (req, res) => {
   // do your magic!
-  db.remove(req.params.id)
+    const {id} = req.user;
+  db.remove(id)
   .then( userRemove => {
-    res.status(201).json({messsge: `user with id ${req.params.id} has been deleted from database`})
+    res.status(201).json({messsge: `user with id ${id} has been deleted from database`})
 
+  })
+  .catch( err => {
+    res.status(500).json({errorMessage: "there was a problem deleted user from data!"})
   })
     
     
    
 });
-
-router.put('/:id', validateUserId, validatePost, (req, res) => {
+//good
+router.put('/:id', validateUserId, validateUpDate, (req, res) => {
   // do your magic!
-    res.status(400).json(req.post)
-     
+  res.status(200).json(req.body);
+  
 });
 
 //custom middleware
-
+//good
 function validateUserId(req, res, next) {
   // do your magic!
   db.getById(req.params.id)
@@ -82,45 +72,75 @@ function validateUserId(req, res, next) {
   })
   
 }
-
+//good
 function validateUser(req, res, next) {
-  // do your magic!
-   req.body;
+// do your magic!
+const {name} = req.body;
+console.log("validateUser:name", name)
+  if(name == undefined){
+    res.status(400).json({message: "request must have a body with name property!" })
+  }
+  if(name == ""){
+    res.status(400).json({message: "missing required name field" })
+  }
+  
   db.insert(req.body)
     .then(name =>{
-        if(name == ""){
-          res.status(400).json({message: "missing required name field" })
-        } else{
           req.name = name;
-          next()
-        } 
+          next();    
     })
     .catch( err => {
-      res.status(500).json({errorMessage: "request must have a body with name prooerty"})
+      res.status(500).json({errorMessage: "there was a problem with your request!"})
     })
    
 }
 
 function validatePost(req, res, next) {
   // do your magic!
-  const body = req.body;
-  console.log("validatePost:body", body)
+  const  {text, user_id} = req.body;
+  
 
-  if(!body){
+  if(!text && !user_id){
     res.status(400).json({message: "missing post data"})
-  } if(!body.name) {
-      res.status(400).json({message: "missing required text field"})
-  } if(body.name){
-    db.getUserPosts(req.params)
-      .then(post => {
-        req.post = body;
-        next()
-      })
-      .catch(err => {
-        res.status(500).json({errorMessage: "there was a problem posting to server"})
-      })
 
+  } if(!id || !text || !user_id) {
+      res.status(400).json({message: "missing required text field"})
+
+  } else if(text, user_id){
+      db.getUserPosts(req.user)
+        .then(post => {
+          req.post = post;
+          next()
+        })
+        .catch(err => {
+          res.status(500).json({errorMessage: "there was a problem posting to server"})
+        })
   }
+}
+//good
+function validateUpDate( req, res, next) {
+  const {id, name} = req.body;
+
+  if(!req.body) {
+    res.status(400).json({message: "must have id and name field"})
+  }
+  if(id == "") {
+    res.status(400).json({message: "must have id field"}) 
+  }
+  if(name == ""){
+    res.status(400).json({message: "must have name field"}) 
+  }
+
+  db.update(req.user.id , {id, name})
+    .then( post => {
+      req.body = {id, name};
+      console.log("update:req.user",req.user)
+      console.log("userRouter.js:validateUpDate:.then:req.body",req.body)
+      next();
+    })
+    .catch( err => {
+      res.status(500).json({errorMessage: "there was a problem updating to server"})  
+    })
 }
 
 module.exports = router;
