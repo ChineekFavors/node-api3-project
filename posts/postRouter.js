@@ -57,6 +57,21 @@ router.put('/:id',  (req, res) => {
 
 });
 
+// router.post('/', (req, res) => {
+//   const post = req.body;
+//   if(!post){
+//     res.status(401).json({message: 'action must have required fields'})
+//   }
+//   if(post.text == ""){
+//     res.status(401).json({message: 'text field is required!'})  
+//   }
+//   if(post[])
+//   db.insert()
+//     .then( posted => {
+//       res.status(201).json
+//     })
+// })
+
 // custom middleware
 
 function validatePostId(req, res, next) {
