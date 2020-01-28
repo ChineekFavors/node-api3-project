@@ -38,7 +38,7 @@ router.put('/:id',  (req, res) => {
   console.log('postRouter.js:id',id)
   console.log('postRouter.js:changes',changes)
   
-    if(!body){
+    if(!changes){
       res.status(401).json({message: 'action must have required fields'})
     }
     if(changes.text == ""){
@@ -47,7 +47,7 @@ router.put('/:id',  (req, res) => {
     if(changes['user_id'] == ""){
       res.status(401).json({message: 'user_id field is required!'})
     }
-  db.update(id, {changes})
+  db.update(id, changes)
     .then(updated => {
       res.status(201).json(changes);
     })
