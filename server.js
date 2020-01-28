@@ -1,13 +1,31 @@
 const express = require('express');
-
 const server = express();
+const helmet = require('helmet');
+const userRouter = require('./users/userRouter.js');
+const postRouter = require( "./posts/postRouter.js");
 
-server.get('/', (req, res) => {
-  res.send(`<h2>Let's write some middleware!</h2>`);
-});
+server.use(helmet());
+server.use(express.json());
+server.use(logger);
+
+server.use('/users', userRouter);
+server.use('/posts', postRouter);
+
+
+
+
 
 //custom middleware
 
-function logger(req, res, next) {}
+function logger(req, res, next) {
+
+  const method = req.method;
+  const url = req.url;
+  const timestamp = Date();
+
+  console.log({'method':method, 'URL':url, 'timestamp':timestamp});
+  next();
+
+}
 
 module.exports = server;
